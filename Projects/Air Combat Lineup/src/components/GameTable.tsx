@@ -1,12 +1,15 @@
+import { useState } from 'react'
 import { useStore } from '../store'
 import type { Id, Minute } from '../types'
 import { MINUTES, formatMinute } from '../types'
 import { SlotCell } from './SlotCell'
+import { ConfirmDialog } from './ConfirmDialog'
 
 const OPPONENT_LIST_ID = 'known-opponents'
 
 export function GameTable({ teamId }: { teamId: Id }) {
   const { state, dispatch } = useStore()
+  const [pendingId, setPendingId] = useState<Id | null>(null)
   const games = state.games
     .filter(g => g.teamId === teamId)
     .sort((a, b) => a.minute - b.minute)
@@ -14,8 +17,11 @@ export function GameTable({ teamId }: { teamId: Id }) {
   function removeGame(gameId: Id) {
     const game = games.find(g => g.id === gameId)
     const hasOccupiedSlot = game?.slots.some(slot => slot.playerId || slot.accountId) ?? false
-    if (hasOccupiedSlot && !confirm('Delete this game? Its player and account assignments will be lost.')) return
-    dispatch({ type: 'removeGame', gameId })
+    if (!hasOccupiedSlot) {
+      dispatch({ type: 'removeGame', gameId })
+      return
+    }
+    setPendingId(gameId)
   }
 
   return (
@@ -84,6 +90,17 @@ export function GameTable({ teamId }: { teamId: Id }) {
           )}
         </tbody>
       </table>
+
+      <ConfirmDialog
+        open={pendingId !== null}
+        message="Delete this game? Its player and account assignments will be lost."
+        confirmLabel="Delete game"
+        onConfirm={() => {
+          if (pendingId) dispatch({ type: 'removeGame', gameId: pendingId })
+          setPendingId(null)
+        }}
+        onCancel={() => setPendingId(null)}
+      />
     </>
   )
 }

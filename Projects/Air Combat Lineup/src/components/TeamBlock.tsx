@@ -3,12 +3,14 @@ import { useStore } from '../store'
 import type { Id, Minute } from '../types'
 import { AccountsPanel } from './AccountsPanel'
 import { GameTable } from './GameTable'
+import { ConfirmDialog } from './ConfirmDialog'
 
 const DEFAULT_MINUTE: Minute = 0
 
 export function TeamBlock({ teamId }: { teamId: Id }) {
   const { state, dispatch } = useStore()
   const [showAccounts, setShowAccounts] = useState(false)
+  const [confirming, setConfirming] = useState(false)
   const team = state.teams.find(t => t.id === teamId)
   if (!team) return null
 
@@ -21,8 +23,7 @@ export function TeamBlock({ teamId }: { teamId: Id }) {
   }
 
   function remove() {
-    const ok = confirm(`Remove ${team!.name}? This deletes ${gameCount} game(s) and ${accountCount} account(s).`)
-    if (ok) dispatch({ type: 'removeTeam', teamId })
+    setConfirming(true)
   }
 
   return (
@@ -47,6 +48,17 @@ export function TeamBlock({ teamId }: { teamId: Id }) {
       >
         + Add game
       </button>
+
+      <ConfirmDialog
+        open={confirming}
+        message={`Remove ${team.name}? This deletes ${gameCount} game(s) and ${accountCount} account(s).`}
+        confirmLabel="Remove team"
+        onConfirm={() => {
+          dispatch({ type: 'removeTeam', teamId })
+          setConfirming(false)
+        }}
+        onCancel={() => setConfirming(false)}
+      />
     </section>
   )
 }

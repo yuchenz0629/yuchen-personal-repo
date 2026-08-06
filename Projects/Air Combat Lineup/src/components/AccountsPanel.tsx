@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { useStore } from '../store'
 import type { Id } from '../types'
+import { ConfirmDialog } from './ConfirmDialog'
 
 export function AccountsPanel({ teamId }: { teamId: Id }) {
   const { state, dispatch } = useStore()
   const [revealed, setRevealed] = useState<Set<Id>>(new Set())
+  const [pendingId, setPendingId] = useState<Id | null>(null)
   const accounts = state.accounts.filter(a => a.teamId === teamId)
+  const pendingAccount = accounts.find(a => a.id === pendingId)
 
   function toggleReveal(id: Id) {
     setRevealed(current => {
@@ -68,11 +71,7 @@ export function AccountsPanel({ teamId }: { teamId: Id }) {
                 <button
                   className="opacity-50 hover:text-rose-300 hover:opacity-100"
                   title="Delete this account"
-                  onClick={() => {
-                    if (confirm(`Delete account ${account.username || '(unnamed)'}? It will be cleared from any game using it.`)) {
-                      dispatch({ type: 'removeAccount', accountId: account.id })
-                    }
-                  }}
+                  onClick={() => setPendingId(account.id)}
                 >
                   ×
                 </button>
@@ -91,6 +90,17 @@ export function AccountsPanel({ teamId }: { teamId: Id }) {
       <button className="btn-primary mt-2" onClick={() => dispatch({ type: 'addAccount', id: crypto.randomUUID(), teamId })}>
         + Add account
       </button>
+
+      <ConfirmDialog
+        open={pendingId !== null}
+        message={`Delete account ${pendingAccount?.username || '(unnamed)'}? It will be cleared from any game using it.`}
+        confirmLabel="Delete account"
+        onConfirm={() => {
+          if (pendingId) dispatch({ type: 'removeAccount', accountId: pendingId })
+          setPendingId(null)
+        }}
+        onCancel={() => setPendingId(null)}
+      />
     </div>
   )
 }

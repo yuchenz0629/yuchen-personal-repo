@@ -1,9 +1,13 @@
 import { useState } from 'react'
 import { useStore } from '../store'
+import { ConfirmDialog } from './ConfirmDialog'
+import type { Id } from '../types'
 
 export function PlayersPanel() {
   const { state, dispatch } = useStore()
   const [name, setName] = useState('')
+  const [pendingId, setPendingId] = useState<Id | null>(null)
+  const pendingPlayer = state.players.find(p => p.id === pendingId)
 
   function add() {
     const trimmed = name.trim()
@@ -25,11 +29,7 @@ export function PlayersPanel() {
             <button
               className="rounded-full px-1 leading-none opacity-50 hover:text-rose-300 hover:opacity-100"
               title="Remove this player"
-              onClick={() => {
-                if (confirm(`Remove ${player.name}? They will be cleared from any game they are in.`)) {
-                  dispatch({ type: 'removePlayer', playerId: player.id })
-                }
-              }}
+              onClick={() => setPendingId(player.id)}
             >
               ×
             </button>
@@ -46,6 +46,21 @@ export function PlayersPanel() {
         />
         <button className="btn-primary" onClick={add}>+ Add player</button>
       </div>
+
+      <ConfirmDialog
+        open={pendingId !== null}
+        message={
+          pendingPlayer
+            ? `Remove ${pendingPlayer.name}? They will be cleared from any game they are in.`
+            : 'Remove this player? They will be cleared from any game they are in.'
+        }
+        confirmLabel="Remove player"
+        onConfirm={() => {
+          if (pendingId) dispatch({ type: 'removePlayer', playerId: pendingId })
+          setPendingId(null)
+        }}
+        onCancel={() => setPendingId(null)}
+      />
     </section>
   )
 }

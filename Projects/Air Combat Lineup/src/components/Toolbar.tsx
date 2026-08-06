@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Dialog } from './Dialog'
+import { ConfirmDialog } from './ConfirmDialog'
 import { playersWithGames, renderPlayerSchedule } from '../logic/exportText'
 import { useStore } from '../store'
 import type { Id } from '../types'
@@ -8,6 +9,7 @@ export function Toolbar() {
   const { state, dispatch, setMessage } = useStore()
   const [exportFor, setExportFor] = useState<Id | ''>('')
   const [copied, setCopied] = useState(false)
+  const [confirming, setConfirming] = useState(false)
 
   const exportable = playersWithGames(state)
   const selectedPlayer = exportable.find(player => player.id === exportFor)
@@ -20,12 +22,8 @@ export function Toolbar() {
   }
 
   function clearAll() {
-    const count = state.games.length
-    if (count === 0) return
-    if (confirm(`Delete all ${count} game(s)? Teams, players and accounts are kept.`)) {
-      dispatch({ type: 'clearAllGames' })
-      setExportFor('')
-    }
+    if (state.games.length === 0) return
+    setConfirming(true)
   }
 
   async function copy() {
@@ -79,6 +77,18 @@ export function Toolbar() {
           </button>
         </div>
       </Dialog>
+
+      <ConfirmDialog
+        open={confirming}
+        message={`Delete all ${state.games.length} game(s)? Teams, players and accounts are kept.`}
+        confirmLabel="Delete all games"
+        onConfirm={() => {
+          dispatch({ type: 'clearAllGames' })
+          setExportFor('')
+          setConfirming(false)
+        }}
+        onCancel={() => setConfirming(false)}
+      />
     </div>
   )
 }
