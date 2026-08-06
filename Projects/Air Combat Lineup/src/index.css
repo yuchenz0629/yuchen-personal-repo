@@ -80,3 +80,80 @@ button.danger:hover {
   opacity: 0.5;
   font-style: italic;
 }
+
+.block {
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+
+.block-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.block-header h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.spacer {
+  margin-left: auto;
+}
+
+.muted {
+  opacity: 0.6;
+  font-size: 11px;
+}
+
+button.link {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 11.5px;
+  opacity: 0.7;
+  padding: 2px 4px;
+  color: inherit;
+}
+
+button.link:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+button.danger-text:hover {
+  color: #d05b5b;
+}
+
+.accounts-panel {
+  border: 1px dashed rgba(128, 128, 128, 0.35);
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 10px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+
+.chip {
+  border: 1px solid rgba(128, 128, 128, 0.4);
+  border-radius: 99px;
+  padding: 2px 4px 2px 10px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.add-row {
+  display: flex;
+  gap: 6px;
+}
