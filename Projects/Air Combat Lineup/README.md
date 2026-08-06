@@ -1,7 +1,7 @@
 # Air Combat Lineup
 
 Assigns players and team-owned game accounts to ten-minute-mark matches without clashes,
-and exports each player's schedule as a paragraph you can paste into a message.
+and exports each player's schedule as pasteable line-based text you can paste into a message.
 
 ## Running it
 
@@ -28,9 +28,10 @@ notes.
 
 ## Exporting a schedule
 
-Click the export button next to a player's name to copy their schedule as pasteable text.
-The format is a header with the player's name, followed by one game block per match (ordered
-by minute mark), each with the game time, opponent, account username, and password:
+Pick a player from the "Export schedule for…" dropdown in the toolbar to copy their schedule
+as pasteable text. The format is a `=====Name=====` header, followed by one three-line block
+per match (ordered by minute mark), each with the game time and opponent, account username,
+and password:
 
 ```
 =====Alex=====

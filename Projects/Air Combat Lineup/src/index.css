@@ -60,7 +60,8 @@ button.clear-slot {
   line-height: 1;
 }
 
-td.slot-cell:hover button.clear-slot {
+td.slot-cell:hover button.clear-slot,
+td.slot-cell:focus-within button.clear-slot {
   opacity: 0.55;
 }
 

@@ -11,16 +11,15 @@ export function GameTable({ teamId }: { teamId: Id }) {
     .filter(g => g.teamId === teamId)
     .sort((a, b) => a.minute - b.minute)
 
-  const knownOpponents = [...new Set(state.games.map(g => g.opponentName.trim()).filter(Boolean))]
+  function removeGame(gameId: Id) {
+    const game = games.find(g => g.id === gameId)
+    const hasOccupiedSlot = game?.slots.some(slot => slot.playerId || slot.accountId) ?? false
+    if (hasOccupiedSlot && !confirm('Delete this game? Its player and account assignments will be lost.')) return
+    dispatch({ type: 'removeGame', gameId })
+  }
 
   return (
     <>
-      <datalist id={OPPONENT_LIST_ID}>
-        {knownOpponents.map(name => (
-          <option key={name} value={name} />
-        ))}
-      </datalist>
-
       <table className="schedule">
         <thead>
           <tr>
@@ -67,7 +66,7 @@ export function GameTable({ teamId }: { teamId: Id }) {
                 <button
                   className="danger"
                   title="Delete this game"
-                  onClick={() => dispatch({ type: 'removeGame', gameId: game.id })}
+                  onClick={() => removeGame(game.id)}
                 >
                   ×
                 </button>

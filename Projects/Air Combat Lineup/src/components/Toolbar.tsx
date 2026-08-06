@@ -4,7 +4,7 @@ import { useStore } from '../store'
 import type { Id } from '../types'
 
 export function Toolbar() {
-  const { state, dispatch } = useStore()
+  const { state, dispatch, setMessage } = useStore()
   const [exportFor, setExportFor] = useState<Id | ''>('')
   const [copied, setCopied] = useState(false)
 
@@ -28,9 +28,13 @@ export function Toolbar() {
   }
 
   async function copy() {
-    await navigator.clipboard.writeText(scheduleText)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1500)
+    try {
+      await navigator.clipboard.writeText(scheduleText)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch (err) {
+      setMessage(`Copy failed: ${(err as Error).message}`)
+    }
   }
 
   return (

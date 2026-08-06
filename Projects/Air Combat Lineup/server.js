@@ -1,5 +1,5 @@
 import express from 'express'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -26,7 +26,9 @@ app.get('/api/state', async (_req, res) => {
 app.put('/api/state', async (req, res) => {
   try {
     await mkdir(dirname(DATA_FILE), { recursive: true })
-    await writeFile(DATA_FILE, JSON.stringify(req.body, null, 2), 'utf8')
+    const tempFile = join(dirname(DATA_FILE), `.state.json.${process.pid}.${Date.now()}.tmp`)
+    await writeFile(tempFile, JSON.stringify(req.body, null, 2), 'utf8')
+    await rename(tempFile, DATA_FILE)
     res.json({ ok: true })
   } catch (err) {
     console.error(err)
