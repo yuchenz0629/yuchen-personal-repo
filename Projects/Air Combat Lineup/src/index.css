@@ -99,4 +99,8 @@
     background: #14264f;
     color: var(--color-ink);
   }
+  .field option:disabled {
+    color: #7f93bf;
+    font-style: italic;
+  }
 }

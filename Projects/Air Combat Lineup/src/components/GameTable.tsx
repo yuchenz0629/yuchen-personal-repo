@@ -20,23 +20,24 @@ export function GameTable({ teamId }: { teamId: Id }) {
 
   return (
     <>
-      <table className="schedule">
+      <table className="w-full border-collapse text-[12.5px]">
         <thead>
           <tr>
-            <th>Min</th>
-            <th>Opponent</th>
-            <th>Player 1</th>
-            <th>Player 2</th>
-            <th>Player 3</th>
-            <th>Player 4</th>
-            <th />
+            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Min</th>
+            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Opponent</th>
+            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Player 1</th>
+            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Player 2</th>
+            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Player 3</th>
+            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Player 4</th>
+            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-dim" />
           </tr>
         </thead>
         <tbody>
           {games.map(game => (
             <tr key={game.id}>
-              <td>
+              <td className="border-b border-edge-soft px-1.5 py-1.5 align-top">
                 <select
+                  className="field w-auto font-mono text-ink-mono"
                   value={game.minute}
                   onChange={e =>
                     dispatch({ type: 'setGameMinute', gameId: game.id, minute: Number(e.target.value) as Minute })
@@ -49,8 +50,9 @@ export function GameTable({ teamId }: { teamId: Id }) {
                   ))}
                 </select>
               </td>
-              <td>
+              <td className="border-b border-edge-soft px-1.5 py-1.5 align-top">
                 <input
+                  className="field"
                   list={OPPONENT_LIST_ID}
                   placeholder="opponent"
                   value={game.opponentName}
@@ -62,9 +64,9 @@ export function GameTable({ teamId }: { teamId: Id }) {
               {game.slots.map((_, i) => (
                 <SlotCell key={i} gameId={game.id} slotIndex={i} />
               ))}
-              <td>
+              <td className="border-b border-edge-soft px-1.5 py-1.5 align-top">
                 <button
-                  className="danger"
+                  className="opacity-50 hover:text-rose-300 hover:opacity-100"
                   title="Delete this game"
                   onClick={() => removeGame(game.id)}
                 >
@@ -75,7 +77,7 @@ export function GameTable({ teamId }: { teamId: Id }) {
           ))}
           {games.length === 0 && (
             <tr>
-              <td colSpan={7} className="empty-row">
+              <td colSpan={7} className="italic text-ink-dim">
                 No games yet.
               </td>
             </tr>

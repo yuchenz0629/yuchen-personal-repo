@@ -11,10 +11,13 @@ export function SlotCell({ gameId, slotIndex }: { gameId: Id; slotIndex: number 
   const players = playerOptions(state, gameId, slotIndex)
   const accounts = accountOptions(state, gameId, slotIndex)
   const isEmpty = slot.playerId === null && slot.accountId === null
+  const selectedAccount = accounts.find(({ item }) => item.id === slot.accountId)?.item
+  const accountTitle = selectedAccount?.username
 
   return (
-    <td className="slot-cell">
+    <td className="group relative min-w-[150px] border-b border-edge-soft px-1.5 py-1.5 align-top">
       <select
+        className="field mb-1"
         value={slot.playerId ?? ''}
         onChange={e => dispatch({ type: 'setSlotPlayer', gameId, slotIndex, playerId: e.target.value || null })}
       >
@@ -27,8 +30,9 @@ export function SlotCell({ gameId, slotIndex }: { gameId: Id; slotIndex: number 
       </select>
 
       <select
-        className="account-select"
+        className="field font-mono text-[11px] text-ink-mono"
         value={slot.accountId ?? ''}
+        title={accountTitle}
         onChange={e => dispatch({ type: 'setSlotAccount', gameId, slotIndex, accountId: e.target.value || null })}
       >
         <option value="">account…</option>
@@ -41,7 +45,7 @@ export function SlotCell({ gameId, slotIndex }: { gameId: Id; slotIndex: number 
 
       {!isEmpty && (
         <button
-          className="clear-slot"
+          className="absolute right-0.5 top-0.5 rounded px-1 text-[13px] leading-none opacity-0 transition-opacity group-hover:opacity-60 focus-visible:opacity-100 hover:text-rose-300 hover:opacity-100"
           title="Clear this slot"
           onClick={() => dispatch({ type: 'clearSlot', gameId, slotIndex })}
         >
