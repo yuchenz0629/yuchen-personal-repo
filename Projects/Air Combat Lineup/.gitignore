@@ -1,0 +1,8 @@
+node_modules/
+dist/
+
+# Contains plaintext account credentials — never commit
+data/state.json
+
+.superpowers/
+.DS_Store
