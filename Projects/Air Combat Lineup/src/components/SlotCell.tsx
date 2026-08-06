@@ -30,7 +30,7 @@ export function SlotCell({ gameId, slotIndex }: { gameId: Id; slotIndex: number 
       </select>
 
       <select
-        className="field font-mono text-[11px] text-ink-mono"
+        className="field font-mono text-[12.5px] text-ink-mono"
         value={slot.accountId ?? ''}
         title={accountTitle}
         onChange={e => dispatch({ type: 'setSlotAccount', gameId, slotIndex, accountId: e.target.value || null })}
@@ -45,7 +45,7 @@ export function SlotCell({ gameId, slotIndex }: { gameId: Id; slotIndex: number 
 
       {!isEmpty && (
         <button
-          className="absolute right-0.5 top-0.5 rounded px-1 text-[13px] leading-none opacity-0 transition-opacity group-hover:opacity-60 focus-visible:opacity-100 hover:text-rose-300 hover:opacity-100"
+          className="absolute right-0.5 top-0.5 rounded px-1 text-[14px] leading-none opacity-0 transition-opacity group-hover:opacity-60 focus-visible:opacity-100 hover:text-rose-300 hover:opacity-100"
           title="Clear this slot"
           onClick={() => dispatch({ type: 'clearSlot', gameId, slotIndex })}
         >

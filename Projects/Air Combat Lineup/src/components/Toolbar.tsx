@@ -64,7 +64,7 @@ export function Toolbar() {
 
       {selectedPlayer && (
         <div className="glass mt-2 px-3 py-3">
-          <pre className="m-0 mb-2 overflow-x-auto font-mono text-[12.5px] leading-relaxed whitespace-pre-wrap break-all text-ink">{scheduleText}</pre>
+          <pre className="m-0 mb-2 overflow-x-auto font-mono text-[14px] leading-relaxed whitespace-pre-wrap break-all text-ink">{scheduleText}</pre>
           <div className="flex gap-2">
             <button className="btn-primary" onClick={copy}>{copied ? 'Copied' : 'Copy'}</button>
             <button className="btn" onClick={() => setExportFor('')}>close</button>

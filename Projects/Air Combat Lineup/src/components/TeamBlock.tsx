@@ -28,13 +28,13 @@ export function TeamBlock({ teamId }: { teamId: Id }) {
   return (
     <section className="glass mb-3.5 px-3 py-3">
       <div className="mb-2 flex flex-wrap items-center gap-2.5">
-        <h2 className="m-0 text-[15px] font-semibold text-white">{team.name}</h2>
-        <button className="btn text-[11px] text-ink-dim" onClick={() => setShowAccounts(v => !v)}>
+        <h2 className="m-0 text-[17px] font-semibold text-white">{team.name}</h2>
+        <button className="btn text-[12px] text-ink-dim" onClick={() => setShowAccounts(v => !v)}>
           {gameCount} game(s) · {accountCount} account(s) {showAccounts ? '▾' : '▸'}
         </button>
         <span className="ml-auto" />
-        <button className="btn text-[11px]" onClick={rename}>rename</button>
-        <button className="btn text-[11px] hover:border-rose-400/50 hover:bg-rose-500/20 hover:text-rose-200" onClick={remove}>remove team</button>
+        <button className="btn text-[12px]" onClick={rename}>rename</button>
+        <button className="btn text-[12px] hover:border-rose-400/50 hover:bg-rose-500/20 hover:text-rose-200" onClick={remove}>remove team</button>
       </div>
 
       {showAccounts && <AccountsPanel teamId={teamId} />}

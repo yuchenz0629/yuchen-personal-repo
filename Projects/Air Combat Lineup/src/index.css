@@ -18,7 +18,7 @@
     padding: 24px 20px 56px;
     min-height: 100vh;
     font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-    font-size: 14px;
+    font-size: 16px;
     color: var(--color-ink);
     background-color: #0b1533;
   }
@@ -54,8 +54,8 @@
 
 @utility field {
   width: 100%;
-  padding: 3px 7px;
-  font-size: 11.5px;
+  padding: 6px 8px;
+  font-size: 14px;
   border-radius: 7px;
   color: var(--color-ink);
   background: rgba(255, 255, 255, 0.09);
@@ -63,8 +63,8 @@
 }
 
 @utility btn {
-  padding: 4px 11px;
-  font-size: 12px;
+  padding: 6px 12px;
+  font-size: 14px;
   border-radius: 8px;
   cursor: pointer;
   color: var(--color-ink);
@@ -73,8 +73,8 @@
 }
 
 @utility btn-primary {
-  padding: 4px 11px;
-  font-size: 12px;
+  padding: 6px 12px;
+  font-size: 14px;
   font-weight: 600;
   border-radius: 8px;
   cursor: pointer;

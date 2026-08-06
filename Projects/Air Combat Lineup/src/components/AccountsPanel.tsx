@@ -18,13 +18,13 @@ export function AccountsPanel({ teamId }: { teamId: Id }) {
 
   return (
     <div className="mb-2.5 rounded-lg border border-dashed border-edge bg-black/15 p-2">
-      <table className="w-full border-collapse text-[13px]">
+      <table className="w-full border-collapse text-[14px]">
         <thead>
           <tr>
-            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Username</th>
-            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Password</th>
-            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Note</th>
-            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-dim" />
+            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Username</th>
+            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Password</th>
+            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Note</th>
+            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-dim" />
           </tr>
         </thead>
         <tbody>
@@ -50,7 +50,7 @@ export function AccountsPanel({ teamId }: { teamId: Id }) {
                     dispatch({ type: 'updateAccount', accountId: account.id, fields: { password: e.target.value } })
                   }
                 />
-                <button className="btn mt-1 text-[10px]" onClick={() => toggleReveal(account.id)}>
+                <button className="btn mt-1 text-[11px]" onClick={() => toggleReveal(account.id)}>
                   {revealed.has(account.id) ? 'hide' : 'show'}
                 </button>
               </td>
