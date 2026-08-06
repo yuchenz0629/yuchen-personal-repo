@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** A local single-page web app for assigning players and team-owned game accounts to ten-minute-mark matches without clashes, and exporting each player's schedule as a copyable paragraph.
+**Goal:** A local single-page web app for assigning players and team-owned game accounts to ten-minute-mark matches without clashes, and exporting each player's schedule as copyable text.
 
 **Architecture:** Vite + React + TypeScript front end holding all logic, backed by a ~40-line Express server whose only job is reading and writing one `data/state.json` file. All scheduling rules live in pure functions (`availability`, `reducer`, `exportText`, `validate`) that take plain state and return plain state — these are unit-tested first. React components are thin: they read state, render, and dispatch actions.
 
@@ -33,7 +33,7 @@
 | `src/types.ts` | Domain types, `MINUTES`, `emptyState()`, `makeSlots()` |
 | `src/logic/validate.ts` | Parse unknown JSON into `AppState`, report invariant violations |
 | `src/logic/availability.ts` | Who and what is booked at each minute mark; per-slot option lists |
-| `src/logic/exportText.ts` | Per-player paragraph rendering |
+| `src/logic/exportText.ts` | Per-player schedule text rendering |
 | `src/logic/reducer.ts` | Every state mutation, as one pure reducer |
 | `src/api.ts` | `fetchState()` / `saveState()` HTTP calls |
 | `src/store.tsx` | React context: holds state, dispatches actions, debounced save |
@@ -616,7 +616,7 @@ git commit -m "feat: add availability rules for player and account clashes"
 
 ---
 
-### Task 4: Player export paragraph
+### Task 4: Player schedule export
 
 **Files:**
 - Create: `src/logic/exportText.ts`
@@ -626,7 +626,22 @@ git commit -m "feat: add availability rules for player and account clashes"
 - Consumes: `AppState`, `Id`, `Player`, `formatMinute` from `../types`
 - Produces:
   - `playersWithGames(state: AppState): Player[]` — roster order, only players holding at least one slot
-  - `renderPlayerParagraph(state: AppState, playerId: Id): string`
+  - `renderPlayerSchedule(state: AppState, playerId: Id): string`
+
+**Output format.** The rendered text is line-based, meant to paste straight into a chat message:
+
+```
+=====Alex=====
+:10 vs Falcons
+rzcloud07@gmail.com
+NJA202077
+
+:30 vs Kites
+touma80@hotmail.com
+Touma646606123
+```
+
+Exactly: a header of five `=`, the player's name, five `=`; then one block per game separated by a single blank line, with **no** blank line between the header and the first block. Each block is `:MM vs <opponent>`, then the username on its own line, then the password on its own line. No team name appears. Blocks are ordered by minute mark. There is no trailing newline.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -634,8 +649,8 @@ Create `src/logic/exportText.test.ts`:
 
 ```ts
 import { describe, expect, it } from 'vitest'
-import type { AppState } from '../types'
-import { playersWithGames, renderPlayerParagraph } from './exportText'
+import type { AppState, Minute, Slot } from '../types'
+import { playersWithGames, renderPlayerSchedule } from './exportText'
 
 function base(): AppState {
   return {
@@ -645,16 +660,19 @@ function base(): AppState {
       { id: 'p2', name: 'Bo' },
     ],
     accounts: [
-      { id: 'a1', teamId: 'tA', username: 'raptor_01', password: 'a8x2k', note: '' },
-      { id: 'a2', teamId: 'tA', username: 'raptor_02', password: 'm19qz', note: '' },
+      { id: 'a1', teamId: 'tA', username: 'rzcloud07@gmail.com', password: 'NJA202077', note: '' },
+      { id: 'a2', teamId: 'tA', username: 'touma80@hotmail.com', password: 'Touma646606123', note: '' },
     ],
     games: [],
   }
 }
 
-function game(id: string, minute: 0 | 10 | 20 | 30 | 40 | 50, opponent: string, slot0: { playerId: string | null; accountId: string | null }) {
+function game(id: string, minute: Minute, opponent: string, slot0: Slot) {
   return {
-    id, minute, teamId: 'tA', opponentName: opponent,
+    id,
+    minute,
+    teamId: 'tA',
+    opponentName: opponent,
     slots: [
       slot0,
       { playerId: null, accountId: null },
@@ -683,49 +701,83 @@ describe('playersWithGames', () => {
     ]
     expect(playersWithGames(state).map(p => p.id)).toEqual(['p1'])
   })
+
+  it('keeps roster order, not game order', () => {
+    const state = base()
+    state.games = [
+      game('g1', 10, 'Falcons', { playerId: 'p2', accountId: 'a1' }),
+      game('g2', 30, 'Kites', { playerId: 'p1', accountId: 'a2' }),
+    ]
+    expect(playersWithGames(state).map(p => p.id)).toEqual(['p1', 'p2'])
+  })
 })
 
-describe('renderPlayerParagraph', () => {
-  it('says so when the player has no games', () => {
-    expect(renderPlayerParagraph(base(), 'p1')).toBe('Hi Alex — you have no games scheduled.')
+describe('renderPlayerSchedule', () => {
+  it('renders the header and a note when the player has no games', () => {
+    expect(renderPlayerSchedule(base(), 'p1')).toBe('=====Alex=====\nNo games scheduled.')
   })
 
-  it('renders one game with minute, opponent, team and credentials', () => {
+  it('renders one game as three lines under the header', () => {
     const state = base()
     state.games = [game('g1', 10, 'Falcons', { playerId: 'p1', accountId: 'a1' })]
-    expect(renderPlayerParagraph(state, 'p1')).toBe(
-      'Hi Alex — your games today: :10 vs Falcons (Team A), login raptor_01 / password a8x2k. Good luck!',
+    expect(renderPlayerSchedule(state, 'p1')).toBe(
+      '=====Alex=====\n' +
+        ':10 vs Falcons\n' +
+        'rzcloud07@gmail.com\n' +
+        'NJA202077',
     )
   })
 
-  it('orders several games by minute regardless of game order', () => {
+  it('separates games with a blank line and orders them by minute', () => {
     const state = base()
     state.games = [
       game('g2', 30, 'Kites', { playerId: 'p1', accountId: 'a2' }),
       game('g1', 10, 'Falcons', { playerId: 'p1', accountId: 'a1' }),
     ]
-    expect(renderPlayerParagraph(state, 'p1')).toBe(
-      'Hi Alex — your games today: :10 vs Falcons (Team A), login raptor_01 / password a8x2k. ' +
-        ':30 vs Kites (Team A), login raptor_02 / password m19qz. Good luck!',
+    expect(renderPlayerSchedule(state, 'p1')).toBe(
+      '=====Alex=====\n' +
+        ':10 vs Falcons\n' +
+        'rzcloud07@gmail.com\n' +
+        'NJA202077\n' +
+        '\n' +
+        ':30 vs Kites\n' +
+        'touma80@hotmail.com\n' +
+        'Touma646606123',
     )
   })
 
-  it('flags a slot with no account assigned', () => {
+  it('pads the minute mark to two digits', () => {
+    const state = base()
+    state.games = [game('g1', 0, 'Falcons', { playerId: 'p1', accountId: 'a1' })]
+    expect(renderPlayerSchedule(state, 'p1')).toContain(':00 vs Falcons')
+  })
+
+  it('renders a single line when the slot has no account', () => {
     const state = base()
     state.games = [game('g1', 10, 'Falcons', { playerId: 'p1', accountId: null })]
-    expect(renderPlayerParagraph(state, 'p1')).toBe(
-      'Hi Alex — your games today: :10 vs Falcons (Team A), account not assigned. Good luck!',
+    expect(renderPlayerSchedule(state, 'p1')).toBe(
+      '=====Alex=====\n:10 vs Falcons\naccount not assigned',
     )
   })
 
   it('uses a placeholder when the opponent is blank', () => {
     const state = base()
-    state.games = [game('g1', 10, '', { playerId: 'p1', accountId: 'a1' })]
-    expect(renderPlayerParagraph(state, 'p1')).toContain(':10 vs (opponent TBC) (Team A)')
+    state.games = [game('g1', 10, '   ', { playerId: 'p1', accountId: 'a1' })]
+    expect(renderPlayerSchedule(state, 'p1')).toContain(':10 vs (opponent TBC)')
   })
 
   it('returns an empty string for an unknown player', () => {
-    expect(renderPlayerParagraph(base(), 'nope')).toBe('')
+    expect(renderPlayerSchedule(base(), 'nope')).toBe('')
+  })
+
+  it('does not reorder the caller’s games array', () => {
+    const state = base()
+    state.games = [
+      game('g2', 30, 'Kites', { playerId: 'p1', accountId: 'a2' }),
+      game('g1', 10, 'Falcons', { playerId: 'p1', accountId: 'a1' }),
+    ]
+    renderPlayerSchedule(state, 'p1')
+    expect(state.games.map(g => g.id)).toEqual(['g2', 'g1'])
   })
 })
 ```
@@ -743,6 +795,8 @@ Create `src/logic/exportText.ts`:
 import type { AppState, Id, Player } from '../types'
 import { formatMinute } from '../types'
 
+const HEADER_RULE = '====='
+
 /** Players holding at least one slot, in roster order. */
 export function playersWithGames(state: AppState): Player[] {
   const booked = new Set<Id>()
@@ -754,40 +808,48 @@ export function playersWithGames(state: AppState): Player[] {
   return state.players.filter(player => booked.has(player.id))
 }
 
-export function renderPlayerParagraph(state: AppState, playerId: Id): string {
+/**
+ * One player's schedule as pasteable text: a name header, then one block per
+ * game — minute and opponent, then the account username and password on their
+ * own lines — separated by blank lines and ordered by minute mark.
+ */
+export function renderPlayerSchedule(state: AppState, playerId: Id): string {
   const player = state.players.find(p => p.id === playerId)
   if (!player) return ''
 
-  const entries = state.games
+  const header = `${HEADER_RULE}${player.name}${HEADER_RULE}`
+
+  const blocks = state.games
     .filter(game => game.slots.some(slot => slot.playerId === playerId))
     .sort((a, b) => a.minute - b.minute)
     .map(game => {
-      const team = state.teams.find(t => t.id === game.teamId)
       const slot = game.slots.find(s => s.playerId === playerId)!
       const account = state.accounts.find(a => a.id === slot.accountId)
       const opponent = game.opponentName.trim() || '(opponent TBC)'
-      const credentials = account
-        ? `login ${account.username} / password ${account.password}`
-        : 'account not assigned'
-      return `${formatMinute(game.minute)} vs ${opponent} (${team ? team.name : 'Unknown team'}), ${credentials}.`
+      const lines = [`${formatMinute(game.minute)} vs ${opponent}`]
+      if (account) lines.push(account.username, account.password)
+      else lines.push('account not assigned')
+      return lines.join('\n')
     })
 
-  if (entries.length === 0) return `Hi ${player.name} — you have no games scheduled.`
+  if (blocks.length === 0) return `${header}\nNo games scheduled.`
 
-  return `Hi ${player.name} — your games today: ${entries.join(' ')} Good luck!`
+  return `${header}\n${blocks.join('\n\n')}`
 }
 ```
+
+Note on purity: `.filter()` returns a fresh array, so the following `.sort()` mutates only that copy — `state.games` keeps its original order. The final test in the suite guards this.
 
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `npm test -- src/logic/exportText.test.ts`
-Expected: PASS, 9 tests.
+Expected: PASS, 12 tests.
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add src/logic/exportText.ts src/logic/exportText.test.ts
-git commit -m "feat: add per-player schedule paragraph export"
+git commit -m "feat: add per-player schedule export"
 ```
 
 ---
@@ -2403,7 +2465,7 @@ git commit -m "feat: add team block with collapsible account editor and player r
 - Modify: `src/App.tsx`, `src/index.css`
 
 **Interfaces:**
-- Consumes: `useStore`; `playersWithGames`, `renderPlayerParagraph` from `../logic/exportText`
+- Consumes: `useStore`; `playersWithGames`, `renderPlayerSchedule` from `../logic/exportText`
 - Produces: `<Toolbar />`, and the finished `App` page
 
 - [ ] **Step 1: Write the toolbar**
@@ -2412,7 +2474,7 @@ Create `src/components/Toolbar.tsx`:
 
 ```tsx
 import { useState } from 'react'
-import { playersWithGames, renderPlayerParagraph } from '../logic/exportText'
+import { playersWithGames, renderPlayerSchedule } from '../logic/exportText'
 import { useStore } from '../store'
 import type { Id } from '../types'
 
@@ -2422,7 +2484,7 @@ export function Toolbar() {
   const [copied, setCopied] = useState(false)
 
   const exportable = playersWithGames(state)
-  const paragraph = exportFor ? renderPlayerParagraph(state, exportFor) : ''
+  const scheduleText = exportFor ? renderPlayerSchedule(state, exportFor) : ''
 
   function addTeam() {
     const name = prompt('Team name')
@@ -2439,7 +2501,7 @@ export function Toolbar() {
   }
 
   async function copy() {
-    await navigator.clipboard.writeText(paragraph)
+    await navigator.clipboard.writeText(scheduleText)
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
   }
@@ -2470,7 +2532,7 @@ export function Toolbar() {
 
       {exportFor && (
         <div className="export-panel">
-          <p>{paragraph}</p>
+          <pre className="export-text">{scheduleText}</pre>
           <div className="add-row">
             <button onClick={copy}>{copied ? 'Copied' : 'Copy'}</button>
             <button className="link" onClick={() => setExportFor('')}>close</button>
@@ -2572,9 +2634,13 @@ h1 {
   padding: 10px;
 }
 
-.export-panel p {
+.export-panel pre.export-text {
   margin: 0 0 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
   line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 
 .banner {
@@ -2611,7 +2677,7 @@ Run: `npm run dev`, open http://localhost:5173, and verify each of these:
 4. Clear one slot with its `×`. Confirm only that cell empties.
 5. Change the Team A game's minute to `:30`, then back to `:10`. Confirm no data is lost when there is no clash.
 6. Put a player in both a Team A `:10` game and a Team B `:30` game, then change the Team B game to `:10`. Confirm the clashing cell clears and a message names the player.
-7. Export a player's schedule. Confirm the paragraph lists their games in minute order with credentials, and that Copy works.
+7. Export a player's schedule. Confirm the header reads `=====<name>=====`, each game is a `:MM vs <opponent>` line followed by the username and password on their own lines, blocks are separated by one blank line and ordered by minute, and Copy puts exactly that text on the clipboard.
 8. Reload the page. Confirm everything persisted.
 9. Remove a team. Confirm the dialog names the right game and account counts, and that they disappear.
 10. Clear all games. Confirm teams, players and accounts survive.
@@ -2644,7 +2710,7 @@ Create `README.md`:
 # Air Combat Lineup
 
 Assigns players and team-owned game accounts to ten-minute-mark matches without clashes,
-and exports each player's schedule as a paragraph you can paste into a message.
+and exports each player's schedule as pasteable text you can send them.
 
 ## Running it
 
@@ -2699,5 +2765,5 @@ Checked against the spec:
 
 - Architecture, data model, all four invariants, layout, conflict rules, minute-change behaviour, three reset granularities, cascade team removal, export format, code structure and every listed test case have a corresponding task.
 - The spec's load-time validation requirement is Task 5; it repairs rather than only reporting, which is a strictly stronger behaviour and keeps the app usable.
-- Names are consistent across tasks: `bookingsAt`, `describeBooking`, `playerOptions`, `accountOptions`, `Option<T>`, `Booking`, `reduce`, `Action`, `ReduceResult`, `validateState`, `playersWithGames`, `renderPlayerParagraph`, `fetchState`, `saveState`, `useStore`, `StoreProvider`.
+- Names are consistent across tasks: `bookingsAt`, `describeBooking`, `playerOptions`, `accountOptions`, `Option<T>`, `Booking`, `reduce`, `Action`, `ReduceResult`, `validateState`, `playersWithGames`, `renderPlayerSchedule`, `fetchState`, `saveState`, `useStore`, `StoreProvider`.
 - The `Action` union is defined in full in Task 6 so Task 7 only adds `switch` cases, avoiding a type mismatch between the two tasks.

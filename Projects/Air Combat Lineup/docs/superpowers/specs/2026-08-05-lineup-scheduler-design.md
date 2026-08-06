@@ -14,7 +14,7 @@ Two constraints make this fiddly to track by hand:
 
 After the lineup is set, each player needs to be told, individually, which minute marks they play, against whom, and with which credentials.
 
-This app manages that: enter teams, players, accounts and matches on one page; the app makes clashes unselectable; export a per-player paragraph to send them.
+This app manages that: enter teams, players, accounts and matches on one page; the app makes clashes unselectable; export a per-player schedule to send them.
 
 ## Scope
 
@@ -125,11 +125,31 @@ Cascade-deletes that team's games and accounts, behind a confirm dialog naming t
 
 ### Export
 
-`Export schedule for… ▾` lists every player holding at least one slot. Selecting one renders a paragraph into a panel with a **Copy** button:
+`Export schedule for… ▾` lists every player holding at least one slot. Selecting one renders that player's schedule into a panel with a **Copy** button. The output is line-based, sized to paste straight into a chat message:
 
-> Hi Alex — your games today: :10 vs Falcons (Team A), login `raptor_01` / password `a8x2k`. :30 vs Kites (Team A), login `raptor_01` / password `a8x2k`. Good luck!
+```
+=====Alex=====
+:10 vs Falcons
+rzcloud07@gmail.com
+NJA202077
 
-Games are ordered by minute. A slot with a player but no account renders as `account not assigned` in place of the credentials.
+:30 vs Kites
+touma80@hotmail.com
+Touma646606123
+```
+
+The exact shape:
+
+- A header line: five `=`, the player's name, five `=`.
+- Then one block per game, blocks separated by a single blank line. There is no blank line between the header and the first block.
+- Each block is three lines: `:MM vs <opponent>`, then the account username on its own line, then the account password on its own line.
+- Blocks are ordered by minute mark.
+- The team name is not shown — the account credentials already identify which team the player is on.
+- A slot with a player but no account renders a single line reading `account not assigned` in place of the two credential lines, making the block two lines instead of three.
+- A game with a blank opponent renders `(opponent TBC)` as the opponent.
+- A player with no games renders the header followed by `No games scheduled.`
+
+The username field typically holds an email address; the app treats it as opaque text either way.
 
 ## Code structure
 
@@ -137,7 +157,7 @@ Games are ordered by minute. A slot with a player but no account renders as `acc
 server.js                     GET/PUT /api/state → data/state.json
 src/state.ts                  types, load/save, debounced sync, load-time validation
 src/logic/availability.ts     booked players/accounts per minute mark
-src/logic/export.ts           renderPlayerParagraph(state, playerId) → string
+src/logic/exportText.ts       renderPlayerSchedule(state, playerId) → string
 src/components/TeamBlock.tsx
 src/components/GameTable.tsx
 src/components/SlotCell.tsx
@@ -147,7 +167,7 @@ src/App.tsx
 data/state.json               gitignored
 ```
 
-`availability.ts` and `export.ts` are pure functions over plain state and hold all the real logic. Components read state and dispatch edits; they contain no scheduling rules.
+`availability.ts` and `exportText.ts` are pure functions over plain state and hold all the real logic. Components read state and dispatch edits; they contain no scheduling rules.
 
 ## Testing
 
@@ -159,11 +179,13 @@ Unit tests with Vitest, written before the implementation of each pure module.
 - An account is only offered for its owning team.
 - The occupant of the slot being edited is not reported as blocking itself.
 
-`renderPlayerParagraph`:
-- A player with no games.
-- One game — minute, opponent, team, username and password all present.
-- Several games — ordered by minute.
+`renderPlayerSchedule`:
+- A player with no games — header plus `No games scheduled.`
+- One game — header, then the `:MM vs opponent` line, username line and password line.
+- Several games — ordered by minute, separated by one blank line, no blank line after the header.
 - A slot with a player but no account.
+- A game with a blank opponent name.
+- An unknown player id.
 
 Load-time validation:
 - A file violating each invariant produces a corresponding banner entry.
