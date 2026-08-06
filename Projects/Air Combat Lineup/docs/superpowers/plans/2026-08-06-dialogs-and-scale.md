@@ -417,3 +417,135 @@ Every assertion from Step 3 with its actual result, the measurements, the screen
 - The whitespace-sensitivity requirement is restated at both places the `<pre>` classes appear (Task 4) and in the Global Constraints.
 - Task 2's find-and-replace table carries an explicit double-promotion warning, which is the obvious way that task goes wrong.
 - No new dependency is introduced anywhere; Playwright is `npx`-only in Task 6.
+
+---
+
+### Task 7: Account email field
+
+**Added after the plan was approved,** at the owner's request: an account gains a separate `email` field alongside its existing `username`. The username stays the in-game login; the email is the registered/recovery address. **The export is unchanged** — it keeps showing username and password only, since the email is organiser-facing bookkeeping.
+
+Run this task BEFORE Task 5.
+
+**This task lifts the plan's "never modify" rule** for `src/types.ts`, `src/logic/validate.ts` and `src/logic/reducer.ts`, because it is a genuine model change rather than presentation. `src/store.tsx`, `src/api.ts` and `server.js` remain untouched. `src/logic/exportText.ts` remains untouched.
+
+**Files:**
+- Modify: `src/types.ts`, `src/logic/validate.ts`, `src/logic/reducer.ts`, `src/components/AccountsPanel.tsx`
+- Test: `src/logic/validate.test.ts`, `src/logic/reducer.test.ts`
+
+**Interfaces:**
+- Consumes: existing `Account`
+- Produces: `Account` with an `email: string` field; `updateAccount`'s `fields` accepting `email`
+
+- [ ] **Step 1: Extend the type**
+
+In `src/types.ts`, add `email: string` to the `Account` interface, between `username` and `password`:
+
+```ts
+export interface Account {
+  id: Id
+  teamId: Id
+  username: string
+  email: string
+  password: string
+  note: string
+}
+```
+
+- [ ] **Step 2: Write the failing tests**
+
+Append to `src/logic/reducer.test.ts`, inside the existing `describe('accounts', …)` block:
+
+```ts
+  it('creates a blank account with an empty email', () => {
+    const { state } = reduce(fixture(), { type: 'addAccount', id: 'a9', teamId: 'tA' })
+    expect(state.accounts.find(a => a.id === 'a9')).toEqual({
+      id: 'a9', teamId: 'tA', username: '', email: '', password: '', note: '',
+    })
+  })
+
+  it('updates the email without touching other fields', () => {
+    const { state } = reduce(fixture(), {
+      type: 'updateAccount', accountId: 'a1', fields: { email: 'recovery@example.com' },
+    })
+    const account = state.accounts.find(a => a.id === 'a1')!
+    expect(account.email).toBe('recovery@example.com')
+    expect(account.username).toBe('raptor_01')
+    expect(account.password).toBe('x')
+  })
+```
+
+Append to `src/logic/validate.test.ts`:
+
+```ts
+describe('account email migration', () => {
+  it('defaults a missing email to an empty string without reporting a problem', () => {
+    const raw = {
+      teams: [{ id: 'tA', name: 'Team A' }],
+      players: [],
+      accounts: [{ id: 'a1', teamId: 'tA', username: 'raptor_01', password: 'x', note: '' }],
+      games: [],
+    }
+    const { state, problems } = validateState(raw)
+    expect(state.accounts[0].email).toBe('')
+    expect(problems).toEqual([])
+  })
+
+  it('keeps an email that is present', () => {
+    const raw = {
+      teams: [{ id: 'tA', name: 'Team A' }],
+      players: [],
+      accounts: [
+        { id: 'a1', teamId: 'tA', username: 'raptor_01', email: 'a@b.com', password: 'x', note: '' },
+      ],
+      games: [],
+    }
+    expect(validateState(raw).state.accounts[0].email).toBe('a@b.com')
+  })
+
+  it('coerces a non-string email to an empty string', () => {
+    const raw = {
+      teams: [{ id: 'tA', name: 'Team A' }],
+      players: [],
+      accounts: [{ id: 'a1', teamId: 'tA', username: 'r', email: 42, password: 'x', note: '' }],
+      games: [],
+    }
+    expect(validateState(raw).state.accounts[0].email).toBe('')
+  })
+})
+```
+
+An absent email is a **schema upgrade, not corruption** — every existing `data/state.json` predates the field. It must default silently. Reporting it as a repair would fill the banner with noise on the owner's first load after this change, which is why the first test asserts `problems` is empty.
+
+Existing tests that assert on whole account objects will now fail because the shape changed. Update those fixtures to include `email`, and say in your report which ones you touched.
+
+- [ ] **Step 3: Run the tests and watch them fail**
+
+Run: `npm test`
+Expected: the new tests fail, and any existing whole-object assertions fail on the missing `email`. Capture the actual output.
+
+- [ ] **Step 4: Implement**
+
+In `src/logic/validate.ts`, in the accounts ingestion, add `email: str(candidate.email)` alongside the existing fields. `str` already returns `''` for a missing or non-string value, so both the migration and the coercion fall out of it — do not add a separate branch or a problem message.
+
+In `src/logic/reducer.ts`:
+- `addAccount` creates `{ id, teamId, username: '', email: '', password: '', note: '' }`.
+- The `updateAccount` action's type becomes `Partial<Pick<Account, 'username' | 'email' | 'password' | 'note'>>`.
+
+- [ ] **Step 5: Add the column**
+
+In `src/components/AccountsPanel.tsx`, add an `Email` column between Username and Password — a `<th>` matching the others exactly, and a `<td>` with an `<input className="field" placeholder="email">` bound to `account.email`, dispatching `updateAccount` with `{ email: e.target.value }`. Mirror the existing username input's structure precisely; the only differences are the field name and placeholder.
+
+The table now has five columns including the delete column. Check the header and body cell counts still match, including the `colSpan` on the empty-state row.
+
+- [ ] **Step 6: Verify**
+
+Run: `npx tsc --noEmit`, `npm test`, `npm run build`. Capture the actual output. The suite should now be 69 tests.
+
+Confirm `src/logic/exportText.ts` is untouched and the export still renders username and password only.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add src/types.ts src/logic/validate.ts src/logic/reducer.ts src/logic/validate.test.ts src/logic/reducer.test.ts src/components/AccountsPanel.tsx
+git commit -m "feat: add an email field to accounts"
+```
