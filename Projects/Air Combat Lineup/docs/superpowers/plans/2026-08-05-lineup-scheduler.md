@@ -123,8 +123,7 @@ Create `tsconfig.node.json`:
     "composite": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "skipLibCheck": true,
-    "noEmit": true
+    "skipLibCheck": true
   },
   "include": ["vite.config.ts"]
 }
