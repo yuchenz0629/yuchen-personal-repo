@@ -8,3 +8,75 @@ body {
   margin: 0;
   padding: 20px;
 }
+
+table.schedule {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+table.schedule th {
+  text-align: left;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  padding: 6px 7px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.35);
+}
+
+table.schedule td {
+  padding: 6px 7px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+  vertical-align: top;
+}
+
+td.slot-cell {
+  position: relative;
+  min-width: 150px;
+}
+
+td.slot-cell select {
+  display: block;
+  width: 100%;
+  margin-bottom: 3px;
+}
+
+td.slot-cell select.account-select {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  margin-bottom: 0;
+}
+
+button.clear-slot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  opacity: 0;
+  font-size: 13px;
+  line-height: 1;
+}
+
+td.slot-cell:hover button.clear-slot {
+  opacity: 0.55;
+}
+
+button.danger {
+  border: none;
+  background: none;
+  cursor: pointer;
+  opacity: 0.45;
+}
+
+button.danger:hover {
+  opacity: 1;
+  color: #d05b5b;
+}
+
+.empty-row {
+  opacity: 0.5;
+  font-style: italic;
+}
