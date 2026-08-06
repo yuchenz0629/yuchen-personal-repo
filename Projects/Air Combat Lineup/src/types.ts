@@ -20,6 +20,7 @@ export interface Account {
   id: Id
   teamId: Id
   username: string
+  email: string
   password: string
   note: string
 }

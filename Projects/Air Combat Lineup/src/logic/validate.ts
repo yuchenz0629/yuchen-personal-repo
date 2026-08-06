@@ -63,6 +63,7 @@ export function validateState(raw: unknown): { state: AppState; problems: string
       id: String(candidate.id),
       teamId,
       username: str(candidate.username),
+      email: str(candidate.email),
       password: str(candidate.password),
       note: str(candidate.note),
     })

@@ -132,3 +132,39 @@ describe('validateState', () => {
     expect(problems.some(p => p.includes('No Id Game'))).toBe(true)
   })
 })
+
+describe('account email migration', () => {
+  it('defaults a missing email to an empty string without reporting a problem', () => {
+    const raw = {
+      teams: [{ id: 'tA', name: 'Team A' }],
+      players: [],
+      accounts: [{ id: 'a1', teamId: 'tA', username: 'raptor_01', password: 'x', note: '' }],
+      games: [],
+    }
+    const { state, problems } = validateState(raw)
+    expect(state.accounts[0].email).toBe('')
+    expect(problems).toEqual([])
+  })
+
+  it('keeps an email that is present', () => {
+    const raw = {
+      teams: [{ id: 'tA', name: 'Team A' }],
+      players: [],
+      accounts: [
+        { id: 'a1', teamId: 'tA', username: 'raptor_01', email: 'a@b.com', password: 'x', note: '' },
+      ],
+      games: [],
+    }
+    expect(validateState(raw).state.accounts[0].email).toBe('a@b.com')
+  })
+
+  it('coerces a non-string email to an empty string', () => {
+    const raw = {
+      teams: [{ id: 'tA', name: 'Team A' }],
+      players: [],
+      accounts: [{ id: 'a1', teamId: 'tA', username: 'r', email: 42, password: 'x', note: '' }],
+      games: [],
+    }
+    expect(validateState(raw).state.accounts[0].email).toBe('')
+  })
+})

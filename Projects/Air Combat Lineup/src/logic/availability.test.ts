@@ -15,9 +15,9 @@ function fixture(): AppState {
       { id: 'p3', name: 'Cass' },
     ],
     accounts: [
-      { id: 'a1', teamId: 'tA', username: 'raptor_01', password: 'x', note: '' },
-      { id: 'a2', teamId: 'tA', username: 'raptor_02', password: 'y', note: '' },
-      { id: 'b1', teamId: 'tB', username: 'viper_01', password: 'z', note: '' },
+      { id: 'a1', teamId: 'tA', username: 'raptor_01', email: '', password: 'x', note: '' },
+      { id: 'a2', teamId: 'tA', username: 'raptor_02', email: '', password: 'y', note: '' },
+      { id: 'b1', teamId: 'tB', username: 'viper_01', email: '', password: 'z', note: '' },
     ],
     games: [
       {

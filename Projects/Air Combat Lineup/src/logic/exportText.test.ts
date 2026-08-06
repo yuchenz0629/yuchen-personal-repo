@@ -10,8 +10,8 @@ function base(): AppState {
       { id: 'p2', name: 'Bo' },
     ],
     accounts: [
-      { id: 'a1', teamId: 'tA', username: 'rzcloud07@gmail.com', password: 'NJA202077', note: '' },
-      { id: 'a2', teamId: 'tA', username: 'touma80@hotmail.com', password: 'Touma646606123', note: '' },
+      { id: 'a1', teamId: 'tA', username: 'rzcloud07@gmail.com', email: '', password: 'NJA202077', note: '' },
+      { id: 'a2', teamId: 'tA', username: 'touma80@hotmail.com', email: '', password: 'Touma646606123', note: '' },
     ],
     games: [],
   }

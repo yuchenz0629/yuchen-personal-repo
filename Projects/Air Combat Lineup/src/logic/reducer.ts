@@ -9,7 +9,7 @@ export type Action =
   | { type: 'addPlayer'; id: Id; name: string }
   | { type: 'removePlayer'; playerId: Id }
   | { type: 'addAccount'; id: Id; teamId: Id }
-  | { type: 'updateAccount'; accountId: Id; fields: Partial<Pick<Account, 'username' | 'password' | 'note'>> }
+  | { type: 'updateAccount'; accountId: Id; fields: Partial<Pick<Account, 'username' | 'email' | 'password' | 'note'>> }
   | { type: 'removeAccount'; accountId: Id }
   | { type: 'addGame'; id: Id; teamId: Id; minute: Minute }
   | { type: 'removeGame'; gameId: Id }
@@ -79,7 +79,7 @@ export function reduce(state: AppState, action: Action): ReduceResult {
           ...state,
           accounts: [
             ...state.accounts,
-            { id: action.id, teamId: action.teamId, username: '', password: '', note: '' },
+            { id: action.id, teamId: action.teamId, username: '', email: '', password: '', note: '' },
           ],
         },
       }

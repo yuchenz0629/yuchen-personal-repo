@@ -25,6 +25,7 @@ export function AccountsPanel({ teamId }: { teamId: Id }) {
         <thead>
           <tr>
             <th className="border-b border-edge px-1.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Username</th>
+            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Email</th>
             <th className="border-b border-edge px-1.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Password</th>
             <th className="border-b border-edge px-1.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Note</th>
             <th className="border-b border-edge px-1.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-dim" />
@@ -40,6 +41,16 @@ export function AccountsPanel({ teamId }: { teamId: Id }) {
                   placeholder="username"
                   onChange={e =>
                     dispatch({ type: 'updateAccount', accountId: account.id, fields: { username: e.target.value } })
+                  }
+                />
+              </td>
+              <td className="border-b border-edge-soft px-1.5 py-1.5 align-top">
+                <input
+                  className="field"
+                  value={account.email}
+                  placeholder="email"
+                  onChange={e =>
+                    dispatch({ type: 'updateAccount', accountId: account.id, fields: { email: e.target.value } })
                   }
                 />
               </td>
@@ -80,7 +91,7 @@ export function AccountsPanel({ teamId }: { teamId: Id }) {
           ))}
           {accounts.length === 0 && (
             <tr>
-              <td colSpan={4} className="border-b border-edge-soft px-1.5 py-1.5 align-top italic text-ink-dim">
+              <td colSpan={5} className="border-b border-edge-soft px-1.5 py-1.5 align-top italic text-ink-dim">
                 No accounts for this team yet.
               </td>
             </tr>

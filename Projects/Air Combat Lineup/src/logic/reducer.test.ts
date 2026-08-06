@@ -10,8 +10,8 @@ function fixture(): AppState {
     ],
     players: [{ id: 'p1', name: 'Alex' }],
     accounts: [
-      { id: 'a1', teamId: 'tA', username: 'raptor_01', password: 'x', note: '' },
-      { id: 'b1', teamId: 'tB', username: 'viper_01', password: 'z', note: '' },
+      { id: 'a1', teamId: 'tA', username: 'raptor_01', email: '', password: 'x', note: '' },
+      { id: 'b1', teamId: 'tB', username: 'viper_01', email: '', password: 'z', note: '' },
     ],
     games: [
       {
@@ -104,7 +104,7 @@ describe('accounts', () => {
   it('adds a blank account to the given team', () => {
     const { state } = reduce(fixture(), { type: 'addAccount', id: 'a2', teamId: 'tA' })
     expect(state.accounts.find(a => a.id === 'a2')).toEqual({
-      id: 'a2', teamId: 'tA', username: '', password: '', note: '',
+      id: 'a2', teamId: 'tA', username: '', email: '', password: '', note: '',
     })
   })
 
@@ -115,6 +115,23 @@ describe('accounts', () => {
     const account = state.accounts.find(a => a.id === 'a1')!
     expect(account.password).toBe('new')
     expect(account.username).toBe('raptor_01')
+  })
+
+  it('creates a blank account with an empty email', () => {
+    const { state } = reduce(fixture(), { type: 'addAccount', id: 'a9', teamId: 'tA' })
+    expect(state.accounts.find(a => a.id === 'a9')).toEqual({
+      id: 'a9', teamId: 'tA', username: '', email: '', password: '', note: '',
+    })
+  })
+
+  it('updates the email without touching other fields', () => {
+    const { state } = reduce(fixture(), {
+      type: 'updateAccount', accountId: 'a1', fields: { email: 'recovery@example.com' },
+    })
+    const account = state.accounts.find(a => a.id === 'a1')!
+    expect(account.email).toBe('recovery@example.com')
+    expect(account.username).toBe('raptor_01')
+    expect(account.password).toBe('x')
   })
 
   it('removing an account clears it out of every slot but keeps the player', () => {
