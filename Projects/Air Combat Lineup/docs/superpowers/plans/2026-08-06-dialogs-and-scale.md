@@ -549,3 +549,70 @@ Confirm `src/logic/exportText.ts` is untouched and the export still renders user
 git add src/types.ts src/logic/validate.ts src/logic/reducer.ts src/logic/validate.test.ts src/logic/reducer.test.ts src/components/AccountsPanel.tsx
 git commit -m "feat: add an email field to accounts"
 ```
+
+---
+
+### Task 8: Export the account email instead of the username
+
+**Added after the plan was approved,** reversing the decision recorded in Task 7. The exported schedule must show the account's **email** and password, not its username and password. Everything else about the export format is unchanged.
+
+Run this task after Task 7.
+
+**This task lifts the plan's "never modify" rule** for `src/logic/exportText.ts` and its test. Nothing else in `src/logic/` changes.
+
+**Files:**
+- Modify: `src/logic/exportText.ts`
+- Test: `src/logic/exportText.test.ts`
+- Modify: `README.md`, and the export sections of `docs/superpowers/specs/2026-08-05-lineup-scheduler-design.md`
+
+**Behaviour:**
+
+Each game block stays three lines — `:MM vs <opponent>`, then a credential line, then the password. The credential line becomes the account's `email` rather than its `username`.
+
+When the assigned account's `email` is empty or whitespace, the line reads exactly `(email not set)`. This is deliberate: it makes an unfilled account visible before the organiser sends the message, rather than shipping a blank line the player cannot act on. A slot with **no account at all** keeps its existing single line, `account not assigned` — the two cases are distinct and must stay distinguishable.
+
+- [ ] **Step 1: Update the tests first**
+
+In `src/logic/exportText.test.ts`:
+
+- Give the fixture's accounts distinct usernames and emails so the two cannot be confused — e.g. account `a1` with `username: 'raptor_01'` and `email: 'rzcloud07@gmail.com'`, account `a2` with `username: 'viper_02'` and `email: 'touma80@hotmail.com'`.
+- Update every existing assertion that expects a username line to expect the email instead. The distinct values above mean a test cannot pass by accident if the wrong field is read.
+- Add a test: an account whose `email` is `''` renders `(email not set)` in place of the credential line, while the password line is still present.
+- Add a test: an account whose `email` is whitespace only (`'   '`) also renders `(email not set)`.
+- Keep the existing test for a slot with no account at all rendering `account not assigned` as a single line, and assert it does NOT read `(email not set)` — the two cases must stay distinct.
+
+- [ ] **Step 2: Run the tests and watch them fail**
+
+Run: `npm test -- src/logic/exportText.test.ts`
+Expected: the updated assertions fail because the implementation still emits usernames. Capture the actual output.
+
+- [ ] **Step 3: Implement**
+
+In `src/logic/exportText.ts`, in the block that currently reads:
+
+```ts
+      if (account) lines.push(account.username, account.password)
+      else lines.push('account not assigned')
+```
+
+change the account branch so the credential line is the trimmed-non-empty `email`, or the literal `(email not set)` when it is empty or whitespace. The password line is unchanged. The no-account branch is unchanged.
+
+- [ ] **Step 4: Verify**
+
+Run: `npx tsc --noEmit`, `npm test`, `npm run build`. Capture the actual output.
+
+- [ ] **Step 5: Update the documentation**
+
+The export format is described in three places and all three now say the wrong thing:
+- `README.md` — its "Exporting a schedule" example and surrounding text.
+- `docs/superpowers/specs/2026-08-05-lineup-scheduler-design.md` — its Export section, including the worked example and the bullet describing the credential line.
+- The same spec's Testing section, which lists the `renderPlayerSchedule` cases.
+
+Update each so it describes email-then-password, and mention the `(email not set)` case. Do not restyle or reorganise those documents — change only what is now inaccurate.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add src/logic/exportText.ts src/logic/exportText.test.ts README.md docs/superpowers/specs/2026-08-05-lineup-scheduler-design.md
+git commit -m "feat: export account email instead of username"
+```
