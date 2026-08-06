@@ -1,8 +1,8 @@
 node_modules/
 dist/
 
-# Contains plaintext account credentials — never commit
-data/state.json
+# Holds plaintext account credentials — never commit anything in here
+data/
 
 .superpowers/
 .DS_Store
