@@ -157,3 +157,56 @@ button.danger-text:hover {
   display: flex;
   gap: 6px;
 }
+
+h1 {
+  font-size: 20px;
+  margin: 0 0 14px;
+}
+
+.toolbar-wrap {
+  margin-bottom: 14px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 8px 10px;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 8px;
+}
+
+.export-panel {
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  padding: 10px;
+}
+
+.export-panel pre.export-text {
+  margin: 0 0 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.banner {
+  border: 1px solid rgba(128, 128, 128, 0.4);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+  font-size: 12.5px;
+}
+
+.banner.warn {
+  border-color: #c98a00;
+  color: #c98a00;
+}
+
+.banner ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
