@@ -34,6 +34,30 @@ describe('purity', () => {
     reduce(before, { type: 'addTeam', id: 'tC', name: 'Team C' })
     expect(JSON.stringify(before)).toBe(snapshot)
   })
+
+  it('removePlayer does not mutate the caller\'s slot object or state', () => {
+    const before = fixture()
+    const snapshot = JSON.stringify(before)
+    const slotBefore = before.games[0].slots[0]
+
+    const result = reduce(before, { type: 'removePlayer', playerId: 'p1' })
+
+    expect(slotBefore).toEqual({ playerId: 'p1', accountId: 'a1' })
+    expect(result.state.games[0].slots[0]).not.toBe(slotBefore)
+    expect(JSON.stringify(before)).toBe(snapshot)
+  })
+
+  it('removeAccount does not mutate the caller\'s slot object or state', () => {
+    const before = fixture()
+    const snapshot = JSON.stringify(before)
+    const slotBefore = before.games[0].slots[0]
+
+    const result = reduce(before, { type: 'removeAccount', accountId: 'a1' })
+
+    expect(slotBefore).toEqual({ playerId: 'p1', accountId: 'a1' })
+    expect(result.state.games[0].slots[0]).not.toBe(slotBefore)
+    expect(JSON.stringify(before)).toBe(snapshot)
+  })
 })
 
 describe('teams', () => {
