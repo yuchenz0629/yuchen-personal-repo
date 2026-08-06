@@ -1,213 +1,102 @@
-:root {
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  font-size: 14px;
-  color-scheme: light dark;
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #e8f0ff;
+  --color-ink-dim: #9fc0ff;
+  --color-ink-mono: #a9c8ff;
+  --color-edge: rgba(120, 170, 255, 0.28);
+  --color-edge-soft: rgba(140, 180, 255, 0.12);
 }
 
-body {
-  margin: 0;
-  padding: 20px;
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    margin: 0;
+    padding: 24px 20px 56px;
+    min-height: 100vh;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 14px;
+    color: var(--color-ink);
+    background-color: #0b1533;
+  }
+
+  /* Fixed so the glow does not drag when a long team list scrolls. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(760px 620px at 10% -10%, rgba(56, 132, 255, 0.75), transparent 68%),
+      radial-gradient(680px 560px at 94% 110%, rgba(120, 80, 255, 0.6), transparent 68%);
+  }
+
+  :where(button, select, input, a, [tabindex]):focus-visible {
+    outline: 2px solid #6fa8ff;
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
 }
 
-table.schedule {
+/* Panel containers only — never rows, cells, chips or controls. */
+@utility glass {
+  background: rgba(16, 32, 72, 0.55);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  border: 1px solid var(--color-edge);
+  box-shadow: 0 4px 18px rgba(4, 12, 40, 0.35);
+  border-radius: 12px;
+}
+
+@utility field {
   width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-table.schedule th {
-  text-align: left;
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  opacity: 0.6;
-  padding: 6px 7px;
-  border-bottom: 1px solid rgba(128, 128, 128, 0.35);
-}
-
-table.schedule td {
-  padding: 6px 7px;
-  border-bottom: 1px solid rgba(128, 128, 128, 0.15);
-  vertical-align: top;
-}
-
-td.slot-cell {
-  position: relative;
-  min-width: 150px;
-}
-
-td.slot-cell select {
-  display: block;
-  width: 100%;
-  margin-bottom: 3px;
-}
-
-td.slot-cell select.account-select {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 11px;
-  margin-bottom: 0;
-}
-
-button.clear-slot {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  opacity: 0;
-  font-size: 13px;
-  line-height: 1;
-}
-
-td.slot-cell:hover button.clear-slot,
-td.slot-cell:focus-within button.clear-slot {
-  opacity: 0.55;
-}
-
-button.danger {
-  border: none;
-  background: none;
-  cursor: pointer;
-  opacity: 0.45;
-}
-
-button.danger:hover {
-  opacity: 1;
-  color: #d05b5b;
-}
-
-.empty-row {
-  opacity: 0.5;
-  font-style: italic;
-}
-
-.block {
-  border: 1px solid rgba(128, 128, 128, 0.3);
-  border-radius: 8px;
-  padding: 10px 12px;
-  margin-bottom: 14px;
-}
-
-.block-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
-}
-
-.block-header h2 {
-  margin: 0;
-  font-size: 15px;
-}
-
-.spacer {
-  margin-left: auto;
-}
-
-.muted {
-  opacity: 0.6;
-  font-size: 11px;
-}
-
-button.link {
-  border: none;
-  background: none;
-  cursor: pointer;
+  padding: 3px 7px;
   font-size: 11.5px;
-  opacity: 0.7;
-  padding: 2px 4px;
-  color: inherit;
+  border-radius: 7px;
+  color: var(--color-ink);
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(160, 200, 255, 0.22);
 }
 
-button.link:hover {
-  opacity: 1;
-  text-decoration: underline;
-}
-
-button.danger-text:hover {
-  color: #d05b5b;
-}
-
-.accounts-panel {
-  border: 1px dashed rgba(128, 128, 128, 0.35);
-  border-radius: 6px;
-  padding: 8px;
-  margin-bottom: 10px;
-}
-
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-bottom: 8px;
-}
-
-.chip {
-  border: 1px solid rgba(128, 128, 128, 0.4);
-  border-radius: 99px;
-  padding: 2px 4px 2px 10px;
+@utility btn {
+  padding: 4px 11px;
   font-size: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.add-row {
-  display: flex;
-  gap: 6px;
-}
-
-h1 {
-  font-size: 20px;
-  margin: 0 0 14px;
-}
-
-.toolbar-wrap {
-  margin-bottom: 14px;
-}
-
-.toolbar {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-  padding: 8px 10px;
-  border: 1px solid rgba(128, 128, 128, 0.3);
   border-radius: 8px;
+  cursor: pointer;
+  color: var(--color-ink);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.export-panel {
-  border: 1px solid rgba(128, 128, 128, 0.3);
-  border-top: none;
-  border-radius: 0 0 8px 8px;
-  padding: 10px;
+@utility btn-primary {
+  padding: 4px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(180deg, #4d9bff, #2f6fe4);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 10px rgba(45, 110, 230, 0.5);
 }
 
-.export-panel pre.export-text {
-  margin: 0 0 8px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 12.5px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-
-.banner {
-  border: 1px solid rgba(128, 128, 128, 0.4);
-  border-radius: 6px;
-  padding: 8px 10px;
-  margin-bottom: 12px;
-  font-size: 12.5px;
-}
-
-.banner.warn {
-  border-color: #c98a00;
-  color: #c98a00;
-}
-
-.banner ul {
-  margin: 6px 0 0;
-  padding-left: 18px;
+@layer components {
+  .btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.16);
+  }
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .btn-primary:hover {
+    background: linear-gradient(180deg, #5aa4ff, #3a79ee);
+  }
+  .field option {
+    background: #14264f;
+    color: var(--color-ink);
+  }
 }
