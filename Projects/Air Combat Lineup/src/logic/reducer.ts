@@ -1,4 +1,6 @@
 import type { Account, AppState, Game, Id, Minute, Slot } from '../types'
+import { makeSlots } from '../types'
+import { bookingsAt } from './availability'
 
 export type Action =
   | { type: 'addTeam'; id: Id; name: string }
@@ -102,6 +104,90 @@ export function reduce(state: AppState, action: Action): ReduceResult {
           ),
         },
       }
+
+    case 'addGame':
+      return {
+        state: {
+          ...state,
+          games: [
+            ...state.games,
+            { id: action.id, minute: action.minute, teamId: action.teamId, opponentName: '', slots: makeSlots() },
+          ],
+        },
+      }
+
+    case 'removeGame':
+      return { state: { ...state, games: state.games.filter(g => g.id !== action.gameId) } }
+
+    case 'setGameOpponent':
+      return {
+        state: {
+          ...state,
+          games: state.games.map(g =>
+            g.id === action.gameId ? { ...g, opponentName: action.opponentName } : g,
+          ),
+        },
+      }
+
+    case 'setGameMinute': {
+      const target = state.games.find(g => g.id === action.gameId)
+      if (!target) return { state }
+
+      // Bookings at the destination minute, ignoring the game being moved.
+      const others = { ...state, games: state.games.filter(g => g.id !== action.gameId) }
+      const { players: bookedPlayers, accounts: bookedAccounts } = bookingsAt(others, action.minute)
+
+      const cleared: string[] = []
+      const slots = target.slots.map(slot => {
+        let { playerId, accountId } = slot
+        if (playerId && bookedPlayers.has(playerId)) {
+          cleared.push(state.players.find(p => p.id === playerId)?.name ?? playerId)
+          playerId = null
+        }
+        if (accountId && bookedAccounts.has(accountId)) {
+          cleared.push(state.accounts.find(a => a.id === accountId)?.username ?? accountId)
+          accountId = null
+        }
+        return { playerId, accountId }
+      })
+
+      return {
+        state: {
+          ...state,
+          games: state.games.map(g =>
+            g.id === action.gameId ? { ...g, minute: action.minute, slots } : g,
+          ),
+        },
+        message: cleared.length
+          ? `Moved the game, but cleared ${cleared.join(', ')} — already booked at that minute.`
+          : undefined,
+      }
+    }
+
+    case 'setSlotPlayer':
+    case 'setSlotAccount':
+    case 'clearSlot': {
+      const patch: Partial<Slot> =
+        action.type === 'setSlotPlayer'
+          ? { playerId: action.playerId }
+          : action.type === 'setSlotAccount'
+            ? { accountId: action.accountId }
+            : { playerId: null, accountId: null }
+
+      return {
+        state: {
+          ...state,
+          games: state.games.map(g =>
+            g.id === action.gameId
+              ? { ...g, slots: g.slots.map((s, i) => (i === action.slotIndex ? { ...s, ...patch } : s)) }
+              : g,
+          ),
+        },
+      }
+    }
+
+    case 'clearAllGames':
+      return { state: { ...state, games: [] } }
 
     default:
       throw new Error(`Unhandled action: ${(action as Action).type}`)

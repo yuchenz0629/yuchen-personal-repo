@@ -123,3 +123,102 @@ describe('accounts', () => {
     expect(state.games[0].slots[0]).toEqual({ playerId: 'p1', accountId: null })
   })
 })
+
+describe('games', () => {
+  it('adds a game with four empty slots and a blank opponent', () => {
+    const { state } = reduce(fixture(), { type: 'addGame', id: 'g2', teamId: 'tB', minute: 30 })
+    const game = state.games.find(g => g.id === 'g2')!
+    expect(game.opponentName).toBe('')
+    expect(game.minute).toBe(30)
+    expect(game.slots).toHaveLength(4)
+    expect(game.slots.every(s => s.playerId === null && s.accountId === null)).toBe(true)
+  })
+
+  it('removes a game', () => {
+    const { state } = reduce(fixture(), { type: 'removeGame', gameId: 'g1' })
+    expect(state.games).toHaveLength(0)
+  })
+
+  it('sets the opponent name', () => {
+    const { state } = reduce(fixture(), { type: 'setGameOpponent', gameId: 'g1', opponentName: 'Kites' })
+    expect(state.games[0].opponentName).toBe('Kites')
+  })
+
+  it('clears every game and nothing else', () => {
+    const { state } = reduce(fixture(), { type: 'clearAllGames' })
+    expect(state.games).toEqual([])
+    expect(state.teams).toHaveLength(2)
+    expect(state.accounts).toHaveLength(2)
+    expect(state.players).toHaveLength(1)
+  })
+})
+
+describe('setGameMinute', () => {
+  /** g1 at :10 has Alex on a1. g2 at :30 is empty and on the same team. */
+  function twoGames(): AppState {
+    const state = fixture()
+    state.games.push({
+      id: 'g2', minute: 30, teamId: 'tA', opponentName: 'Kites',
+      slots: [
+        { playerId: null, accountId: null },
+        { playerId: null, accountId: null },
+        { playerId: null, accountId: null },
+        { playerId: null, accountId: null },
+      ],
+    })
+    return state
+  }
+
+  it('moves a game with no clashes and reports nothing', () => {
+    const { state, message } = reduce(twoGames(), { type: 'setGameMinute', gameId: 'g1', minute: 50 })
+    expect(state.games.find(g => g.id === 'g1')!.minute).toBe(50)
+    expect(state.games.find(g => g.id === 'g1')!.slots[0].playerId).toBe('p1')
+    expect(message).toBeUndefined()
+  })
+
+  it('clears a clashing player and reports it', () => {
+    const state = twoGames()
+    state.games[1].slots[0] = { playerId: 'p1', accountId: null }
+    const result = reduce(state, { type: 'setGameMinute', gameId: 'g1', minute: 30 })
+    const moved = result.state.games.find(g => g.id === 'g1')!
+    expect(moved.minute).toBe(30)
+    expect(moved.slots[0].playerId).toBeNull()
+    expect(moved.slots[0].accountId).toBe('a1')
+    expect(result.message).toContain('Alex')
+  })
+
+  it('clears a clashing account and reports it', () => {
+    const state = twoGames()
+    state.games[1].slots[0] = { playerId: null, accountId: 'a1' }
+    const result = reduce(state, { type: 'setGameMinute', gameId: 'g1', minute: 30 })
+    const moved = result.state.games.find(g => g.id === 'g1')!
+    expect(moved.slots[0].accountId).toBeNull()
+    expect(moved.slots[0].playerId).toBe('p1')
+    expect(result.message).toContain('raptor_01')
+  })
+
+  it('leaves the other game untouched', () => {
+    const state = twoGames()
+    state.games[1].slots[0] = { playerId: 'p1', accountId: null }
+    const result = reduce(state, { type: 'setGameMinute', gameId: 'g1', minute: 30 })
+    expect(result.state.games.find(g => g.id === 'g2')!.slots[0].playerId).toBe('p1')
+  })
+})
+
+describe('slots', () => {
+  it('sets a slot player', () => {
+    const { state } = reduce(fixture(), { type: 'setSlotPlayer', gameId: 'g1', slotIndex: 1, playerId: 'p1' })
+    expect(state.games[0].slots[1].playerId).toBe('p1')
+  })
+
+  it('sets a slot account', () => {
+    const { state } = reduce(fixture(), { type: 'setSlotAccount', gameId: 'g1', slotIndex: 1, accountId: 'a1' })
+    expect(state.games[0].slots[1].accountId).toBe('a1')
+  })
+
+  it('clears both fields of one slot only', () => {
+    const { state } = reduce(fixture(), { type: 'clearSlot', gameId: 'g1', slotIndex: 0 })
+    expect(state.games[0].slots[0]).toEqual({ playerId: null, accountId: null })
+    expect(state.games[0].slots).toHaveLength(4)
+  })
+})
