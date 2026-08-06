@@ -26,6 +26,28 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [message, setMessage] = useState<string | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pending = useRef<AppState | null>(null)
+
+  const flushPendingSave = useCallback((keepalive = false) => {
+    if (!timer.current) return
+    clearTimeout(timer.current)
+    timer.current = null
+    const toSave = pending.current
+    pending.current = null
+    if (toSave) {
+      saveState(toSave, keepalive).catch((err: Error) => setMessage(`Save failed: ${err.message}`))
+    }
+  }, [])
+
+  useEffect(() => {
+    return () => flushPendingSave()
+  }, [flushPendingSave])
+
+  useEffect(() => {
+    const handleBeforeUnload = () => flushPendingSave(true)
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [flushPendingSave])
 
   useEffect(() => {
     fetchState()
@@ -47,8 +69,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (result.message) setMessage(result.message)
 
       if (timer.current) clearTimeout(timer.current)
+      pending.current = result.state
       timer.current = setTimeout(() => {
-        saveState(result.state).catch((err: Error) => setMessage(`Save failed: ${err.message}`))
+        timer.current = null
+        const toSave = pending.current
+        pending.current = null
+        if (toSave) {
+          saveState(toSave).catch((err: Error) => setMessage(`Save failed: ${err.message}`))
+        }
       }, SAVE_DEBOUNCE_MS)
 
       return result.state
