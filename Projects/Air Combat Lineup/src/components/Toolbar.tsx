@@ -9,7 +9,9 @@ export function Toolbar() {
   const [copied, setCopied] = useState(false)
 
   const exportable = playersWithGames(state)
-  const scheduleText = exportFor ? renderPlayerSchedule(state, exportFor) : ''
+  const selectedPlayer = exportable.find(player => player.id === exportFor)
+  const selectValue = selectedPlayer ? exportFor : ''
+  const scheduleText = selectedPlayer ? renderPlayerSchedule(state, selectedPlayer.id) : ''
 
   function addTeam() {
     const name = prompt('Team name')
@@ -37,7 +39,7 @@ export function Toolbar() {
         <button onClick={addTeam}>+ Add team</button>
         <span className="spacer" />
         <select
-          value={exportFor}
+          value={selectValue}
           onChange={e => {
             setExportFor(e.target.value)
             setCopied(false)
@@ -55,7 +57,7 @@ export function Toolbar() {
         </button>
       </div>
 
-      {exportFor && (
+      {selectedPlayer && (
         <div className="export-panel">
           <pre className="export-text">{scheduleText}</pre>
           <div className="add-row">
