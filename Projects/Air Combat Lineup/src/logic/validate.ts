@@ -49,7 +49,11 @@ export function validateState(raw: unknown): { state: AppState; problems: string
 
   const accounts: Account[] = []
   for (const candidate of Array.isArray(raw.accounts) ? raw.accounts : []) {
-    if (!isObject(candidate) || !idOrNull(candidate.id)) continue
+    if (!isObject(candidate) || !idOrNull(candidate.id)) {
+      const label = isObject(candidate) ? str(candidate.username) : ''
+      problems.push(label ? `Account entry "${label}" was malformed or had no id; it was removed.` : 'An account entry was malformed or had no id; it was removed.')
+      continue
+    }
     const teamId = str(candidate.teamId)
     if (!teamIds.has(teamId)) {
       problems.push(`Account "${str(candidate.username, String(candidate.id))}" references an unknown team; it was removed.`)
@@ -67,7 +71,11 @@ export function validateState(raw: unknown): { state: AppState; problems: string
 
   const games: Game[] = []
   for (const candidate of Array.isArray(raw.games) ? raw.games : []) {
-    if (!isObject(candidate) || !idOrNull(candidate.id)) continue
+    if (!isObject(candidate) || !idOrNull(candidate.id)) {
+      const label = isObject(candidate) ? str(candidate.opponentName) : ''
+      problems.push(label ? `Game entry "${label}" was malformed or had no id; it was removed.` : 'A game entry was malformed or had no id; it was removed.')
+      continue
+    }
     const label = str(candidate.opponentName, String(candidate.id))
 
     const teamId = str(candidate.teamId)

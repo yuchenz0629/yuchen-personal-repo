@@ -115,4 +115,20 @@ describe('validateState', () => {
     expect(problems.filter(p => p.toLowerCase().includes('player entry'))).toHaveLength(3)
     expect(problems.some(p => p.includes('No Id Player'))).toBe(true)
   })
+
+  it('reports and drops malformed account entries', () => {
+    const raw = { ...wellFormed, accounts: [...wellFormed.accounts, null, 'nope', { username: 'No Id Account' }] }
+    const { state, problems } = validateState(raw)
+    expect(state.accounts).toHaveLength(1)
+    expect(problems.filter(p => p.toLowerCase().includes('account entry'))).toHaveLength(3)
+    expect(problems.some(p => p.includes('No Id Account'))).toBe(true)
+  })
+
+  it('reports and drops malformed game entries', () => {
+    const raw = { ...wellFormed, games: [...wellFormed.games, null, 'nope', { opponentName: 'No Id Game' }] }
+    const { state, problems } = validateState(raw)
+    expect(state.games).toHaveLength(1)
+    expect(problems.filter(p => p.toLowerCase().includes('game entry'))).toHaveLength(3)
+    expect(problems.some(p => p.includes('No Id Game'))).toBe(true)
+  })
 })
