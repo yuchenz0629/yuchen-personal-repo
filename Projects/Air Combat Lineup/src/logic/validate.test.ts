@@ -99,4 +99,20 @@ describe('validateState', () => {
     expect(state.games).toHaveLength(0)
     expect(problems.some(p => p.includes('invalid minute'))).toBe(true)
   })
+
+  it('reports and drops malformed team entries', () => {
+    const raw = { ...wellFormed, teams: [...wellFormed.teams, null, 'nope', { name: 'No Id Team' }] }
+    const { state, problems } = validateState(raw)
+    expect(state.teams).toHaveLength(1)
+    expect(problems.filter(p => p.toLowerCase().includes('team entry'))).toHaveLength(3)
+    expect(problems.some(p => p.includes('No Id Team'))).toBe(true)
+  })
+
+  it('reports and drops malformed player entries', () => {
+    const raw = { ...wellFormed, players: [...wellFormed.players, null, 'nope', { name: 'No Id Player' }] }
+    const { state, problems } = validateState(raw)
+    expect(state.players).toHaveLength(1)
+    expect(problems.filter(p => p.toLowerCase().includes('player entry'))).toHaveLength(3)
+    expect(problems.some(p => p.includes('No Id Player'))).toBe(true)
+  })
 })

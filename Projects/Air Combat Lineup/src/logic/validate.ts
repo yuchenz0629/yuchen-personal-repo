@@ -24,15 +24,25 @@ export function validateState(raw: unknown): { state: AppState; problems: string
     return { state: emptyState(), problems: ['The saved file is not a valid state document; starting empty.'] }
   }
 
-  const teams: Team[] = (Array.isArray(raw.teams) ? raw.teams : [])
-    .filter(isObject)
-    .filter(t => idOrNull(t.id))
-    .map(t => ({ id: String(t.id), name: str(t.name, 'Unnamed team') }))
+  const teams: Team[] = []
+  for (const candidate of Array.isArray(raw.teams) ? raw.teams : []) {
+    if (!isObject(candidate) || !idOrNull(candidate.id)) {
+      const label = isObject(candidate) ? str(candidate.name) : ''
+      problems.push(label ? `Team entry "${label}" was malformed or had no id; it was removed.` : 'A team entry was malformed or had no id; it was removed.')
+      continue
+    }
+    teams.push({ id: String(candidate.id), name: str(candidate.name, 'Unnamed team') })
+  }
 
-  const players: Player[] = (Array.isArray(raw.players) ? raw.players : [])
-    .filter(isObject)
-    .filter(p => idOrNull(p.id))
-    .map(p => ({ id: String(p.id), name: str(p.name, 'Unnamed player') }))
+  const players: Player[] = []
+  for (const candidate of Array.isArray(raw.players) ? raw.players : []) {
+    if (!isObject(candidate) || !idOrNull(candidate.id)) {
+      const label = isObject(candidate) ? str(candidate.name) : ''
+      problems.push(label ? `Player entry "${label}" was malformed or had no id; it was removed.` : 'A player entry was malformed or had no id; it was removed.')
+      continue
+    }
+    players.push({ id: String(candidate.id), name: str(candidate.name, 'Unnamed player') })
+  }
 
   const teamIds = new Set(teams.map(t => t.id))
   const playerIds = new Set(players.map(p => p.id))
