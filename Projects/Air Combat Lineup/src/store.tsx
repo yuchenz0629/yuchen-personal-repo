@@ -14,6 +14,7 @@ interface StoreValue {
   dispatch: (action: Action) => void
   problems: string[]
   message: string | null
+  setMessage: (message: string | null) => void
   dismissMessage: () => void
   status: 'loading' | 'ready' | 'error'
 }
@@ -27,6 +28,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pending = useRef<AppState | null>(null)
+  const statusRef = useRef(status)
+  const stateRef = useRef(state)
+
+  statusRef.current = status
+  stateRef.current = state
 
   const flushPendingSave = useCallback((keepalive = false) => {
     if (!timer.current) return
@@ -64,29 +70,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const dispatch = useCallback((action: Action) => {
-    setState(current => {
-      const result = reduce(current, action)
-      if (result.message) setMessage(result.message)
+    if (statusRef.current !== 'ready') return
 
-      if (timer.current) clearTimeout(timer.current)
-      pending.current = result.state
-      timer.current = setTimeout(() => {
-        timer.current = null
-        const toSave = pending.current
-        pending.current = null
-        if (toSave) {
-          saveState(toSave).catch((err: Error) => setMessage(`Save failed: ${err.message}`))
-        }
-      }, SAVE_DEBOUNCE_MS)
+    const result = reduce(stateRef.current, action)
+    stateRef.current = result.state
+    setState(result.state)
+    if (result.message) setMessage(result.message)
 
-      return result.state
-    })
-  }, [])
+    if (timer.current) clearTimeout(timer.current)
+    pending.current = result.state
+    timer.current = setTimeout(flushPendingSave, SAVE_DEBOUNCE_MS)
+  }, [flushPendingSave])
 
   const dismissMessage = useCallback(() => setMessage(null), [])
 
   return (
-    <StoreContext.Provider value={{ state, dispatch, problems, message, dismissMessage, status }}>
+    <StoreContext.Provider value={{ state, dispatch, problems, message, setMessage, dismissMessage, status }}>
       {children}
     </StoreContext.Provider>
   )

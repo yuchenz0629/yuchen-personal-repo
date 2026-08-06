@@ -8,9 +8,34 @@ function Page() {
 
   if (status === 'loading') return <p>Loading…</p>
 
+  if (status === 'error') {
+    return (
+      <>
+        <h1>Air Combat Lineup</h1>
+        <div className="banner warn">
+          <strong>The saved state could not be loaded.</strong>
+          <ul>
+            {problems.map((problem, i) => (
+              <li key={i}>{problem}</li>
+            ))}
+          </ul>
+          <p>Make sure the state server is running, then reload this page. Nothing will be saved until it loads successfully.</p>
+        </div>
+      </>
+    )
+  }
+
+  const knownOpponents = [...new Set(state.games.map(g => g.opponentName.trim()).filter(Boolean))]
+
   return (
     <>
       <h1>Air Combat Lineup</h1>
+
+      <datalist id="known-opponents">
+        {knownOpponents.map(name => (
+          <option key={name} value={name} />
+        ))}
+      </datalist>
 
       {problems.length > 0 && (
         <div className="banner warn">
