@@ -20,16 +20,16 @@ export function GameTable({ teamId }: { teamId: Id }) {
 
   return (
     <>
-      <table className="w-full border-collapse text-[14px]">
+      <table className="w-full border-collapse table-fixed text-[14px]">
         <thead>
           <tr>
-            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Min</th>
-            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Opponent</th>
+            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-dim w-[76px]">Min</th>
+            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-dim w-[150px]">Opponent</th>
             <th className="border-b border-edge px-1.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Player 1</th>
             <th className="border-b border-edge px-1.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Player 2</th>
             <th className="border-b border-edge px-1.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Player 3</th>
             <th className="border-b border-edge px-1.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-dim">Player 4</th>
-            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-dim" />
+            <th className="border-b border-edge px-1.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-dim w-[36px]" />
           </tr>
         </thead>
         <tbody>
