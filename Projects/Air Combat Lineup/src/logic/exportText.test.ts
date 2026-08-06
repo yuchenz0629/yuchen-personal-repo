@@ -10,8 +10,8 @@ function base(): AppState {
       { id: 'p2', name: 'Bo' },
     ],
     accounts: [
-      { id: 'a1', teamId: 'tA', username: 'rzcloud07@gmail.com', email: '', password: 'NJA202077', note: '' },
-      { id: 'a2', teamId: 'tA', username: 'touma80@hotmail.com', email: '', password: 'Touma646606123', note: '' },
+      { id: 'a1', teamId: 'tA', username: 'raptor_01', email: 'rzcloud07@gmail.com', password: 'NJA202077', note: '' },
+      { id: 'a2', teamId: 'tA', username: 'viper_02', email: 'touma80@hotmail.com', password: 'Touma646606123', note: '' },
     ],
     games: [],
   }
@@ -105,8 +105,26 @@ describe('renderPlayerSchedule', () => {
   it('renders a single line when the slot has no account', () => {
     const state = base()
     state.games = [game('g1', 10, 'Falcons', { playerId: 'p1', accountId: null })]
+    const result = renderPlayerSchedule(state, 'p1')
+    expect(result).toBe('=====Alex=====\n:10 vs Falcons\naccount not assigned')
+    expect(result).not.toContain('(email not set)')
+  })
+
+  it('renders (email not set) when the assigned account has an empty email', () => {
+    const state = base()
+    state.accounts[0].email = ''
+    state.games = [game('g1', 10, 'Falcons', { playerId: 'p1', accountId: 'a1' })]
     expect(renderPlayerSchedule(state, 'p1')).toBe(
-      '=====Alex=====\n:10 vs Falcons\naccount not assigned',
+      '=====Alex=====\n' + ':10 vs Falcons\n' + '(email not set)\n' + 'NJA202077',
+    )
+  })
+
+  it('renders (email not set) when the assigned account email is whitespace only', () => {
+    const state = base()
+    state.accounts[0].email = '   '
+    state.games = [game('g1', 10, 'Falcons', { playerId: 'p1', accountId: 'a1' })]
+    expect(renderPlayerSchedule(state, 'p1')).toBe(
+      '=====Alex=====\n' + ':10 vs Falcons\n' + '(email not set)\n' + 'NJA202077',
     )
   })
 

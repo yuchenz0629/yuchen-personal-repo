@@ -142,14 +142,13 @@ The exact shape:
 
 - A header line: five `=`, the player's name, five `=`.
 - Then one block per game, blocks separated by a single blank line. There is no blank line between the header and the first block.
-- Each block is three lines: `:MM vs <opponent>`, then the account username on its own line, then the account password on its own line.
+- Each block is three lines: `:MM vs <opponent>`, then the account email on its own line, then the account password on its own line.
 - Blocks are ordered by minute mark.
 - The team name is not shown — the account credentials already identify which team the player is on.
 - A slot with a player but no account renders a single line reading `account not assigned` in place of the two credential lines, making the block two lines instead of three.
+- A slot with a player and an account whose email is empty or whitespace keeps the three-line shape, but the credential line reads `(email not set)` instead of the email — distinct from the no-account case, so a real gap in the data is never hidden.
 - A game with a blank opponent renders `(opponent TBC)` as the opponent.
 - A player with no games renders the header followed by `No games scheduled.`
-
-The username field typically holds an email address; the app treats it as opaque text either way.
 
 ## Code structure
 
@@ -181,9 +180,10 @@ Unit tests with Vitest, written before the implementation of each pure module.
 
 `renderPlayerSchedule`:
 - A player with no games — header plus `No games scheduled.`
-- One game — header, then the `:MM vs opponent` line, username line and password line.
+- One game — header, then the `:MM vs opponent` line, email line and password line.
 - Several games — ordered by minute, separated by one blank line, no blank line after the header.
 - A slot with a player but no account.
+- A slot with a player and an account whose email is empty or whitespace — renders `(email not set)` with the password line still present, and is asserted distinct from the no-account case.
 - A game with a blank opponent name.
 - An unknown player id.
 

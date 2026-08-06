@@ -16,7 +16,7 @@ export function playersWithGames(state: AppState): Player[] {
 
 /**
  * One player's schedule as pasteable text: a name header, then one block per
- * game — minute and opponent, then the account username and password on their
+ * game — minute and opponent, then the account email and password on their
  * own lines — separated by blank lines and ordered by minute mark.
  */
 export function renderPlayerSchedule(state: AppState, playerId: Id): string {
@@ -33,8 +33,10 @@ export function renderPlayerSchedule(state: AppState, playerId: Id): string {
       const account = state.accounts.find(a => a.id === slot.accountId)
       const opponent = game.opponentName.trim() || '(opponent TBC)'
       const lines = [`${formatMinute(game.minute)} vs ${opponent}`]
-      if (account) lines.push(account.username, account.password)
-      else lines.push('account not assigned')
+      if (account) {
+        const email = account.email.trim()
+        lines.push(email || '(email not set)', account.password)
+      } else lines.push('account not assigned')
       return lines.join('\n')
     })
 

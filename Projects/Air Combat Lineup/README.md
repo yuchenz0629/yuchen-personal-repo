@@ -30,8 +30,10 @@ notes.
 
 Pick a player from the "Export schedule for…" dropdown in the toolbar to copy their schedule
 as pasteable text. The format is a `=====Name=====` header, followed by one three-line block
-per match (ordered by minute mark), each with the game time and opponent, account username,
-and password:
+per match (ordered by minute mark), each with the game time and opponent, account email,
+and password. If the assigned account has no email set, that line reads `(email not set)`
+instead, so a missing credential is never sent as a blank line. A slot with no account
+assigned at all is a single line reading `account not assigned`:
 
 ```
 =====Alex=====
